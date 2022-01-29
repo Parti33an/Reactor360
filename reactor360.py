@@ -83,10 +83,9 @@ def radius(x,y): return (x*x+y*y)**0.5
 
 class Arrange():
     def __init__(self, r_tvel, step, r_in, r_out):
-        self.tvel = {} # структура словарь: Ключ - позиция, значение - тип ТВЭЛ
+        self.tvel = {} # структура словарь: Ключ - тип ТВЭЛ, значения - позиции ТВЭЛ
         self.tvel_marked =set()
         self.flag_changed = False
-        self.num_tvel_types = 3
         self.r_tvel = r_tvel if r_tvel>0 else 0
         self.r_in = r_in if r_in>0 else 0
         self.r_out = r_out if r_out > self.r_in else self.r_in
@@ -100,7 +99,8 @@ class Arrange():
                 return key
     
     def add(self, i, j, type):
-        if self.tvel.get(type)==None:
+        self.pop(i, j)
+        if type not in self.tvel:
             self.tvel[type]=set()
         self.tvel[type].add((i, j))
     
@@ -119,8 +119,8 @@ class Arrange():
     
     def get_size(self):
         number = 0
-        for i in range(self.get_tvel_types()):
-            number += self.get_quantity(i)
+        for key in self.tvel:
+            number += self.get_quantity(key)
         return number
       
     def get_tvel_types(self):
@@ -509,9 +509,9 @@ class App(Tk):
             self.circle(0, 0, self.arrange.r_out, width=2, outline='black', dash = int(scale))
             self.circle(0, 0, self.arrange.r_in, width=2, outline='black', dash = int(scale))
             
-            l = self.arrange.get_values()
-            for item in l:
+            for item in self.arrange.get_values():
                 x, y = self.arrange.get_coord(*item)
+                a = self.colors[self.arrange.get_tvel(*item)]
                 self.circle(x, y, self.arrange.r_tvel, width=1, outline='black', activefill = ACTIVE_COLOR, fill = self.colors[self.arrange.get_tvel(*item)])
             for item in self.arrange.tvel_marked:
                 self.draw_mark(*self.arrange.get_coord(*item))
