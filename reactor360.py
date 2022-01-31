@@ -234,7 +234,6 @@ class ServiceDialog():
     def __init__(self, parrent, *args, title = "", geometry = "250x250+200+200", func = lambda: True):
         self.dlg = Toplevel(parrent, bd = 3)
         self.dlg.title(title)
-        self.dlg.iconbitmap(ICON_NAME)
         self.dlg.geometry(geometry)
         self.dlg.resizable(width = False, height= False)
         self.dlg.grab_set()
@@ -314,7 +313,10 @@ class App(Tk):
         super().__init__()
         self.configure(bg='blue')
         self.title( PROGRAM_NAME + " - " + DEFAULT_NAME)
-        self.iconbitmap(ICON_NAME)
+        if (Path(ICON_NAME).exists()):
+            self.iconbitmap(default = ICON_NAME)
+        else:
+            pass
         screen_height=int(self.wm_maxsize()[1])  # получаем размер экрана и вычисляем размер окна приложения
         self.start_position_askdialog="+{}+{}".format(int(screen_height/3), int(screen_height/3))
         self.geometry('{}x{}+{}+{}'.format(int(screen_height*0.9), int(screen_height*0.9), 0, 0))
@@ -638,7 +640,6 @@ class App(Tk):
         dialog.focus_set()
         dialog.grab_set()
         dialog.protocol("WM_DELETE_WINDOW", close)
-        dialog.iconbitmap(ICON_NAME)
         dialog.resizable(width = False, height= False)
         color_tvel=Button(dialog, width = 1, height= 1, bg= self.colors[1], command = change_color)
         color_tvel.place(relx=0.8, rely=0.23)
@@ -661,7 +662,7 @@ class App(Tk):
         tmp = Arrange.open(self.filename) 
         if tmp:
             self.arrange = tmp
-            num_colors = len(self.colors)
+            num_colors = len(self.colors) - 1
             if self.arrange.get_tvel_types() > num_colors:
                 self.tvel_types.extend(["{}{}".format(M_TVEL,i) for i in range(num_colors, self.arrange.get_tvel_types()+1)])
                 self.colors.extend([rand_color() for _ in range(num_colors, self.arrange.get_tvel_types()+1)])
