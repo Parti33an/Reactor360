@@ -26,7 +26,7 @@ COS_60 = 0.5
 SIN_60 = (3**0.5)/2
 OUTPUT_FORMAT = "{:.4f},{:.4f}\n"  # формат сохранения координат
 F_EXT = "tve"
-DEFAULT_NAME = 'noname.' + F_EXT
+DEFAULT_NAME = '' #'noname.' + F_EXT
 PROGRAM_NAME = ' А.З. '
 ACTIVE_COLOR = 'magenta'
 
@@ -126,7 +126,7 @@ class Arrange():
     def get_tvel_types(self):
         tmp = list(self.tvel.keys())
         if tmp!=[]:
-            return max(tmp)
+            return max(tmp) #возвращает максимальный значение типа твел, при создании меню и обработке количества ТВЭЛ учитывать, что нумерация типов с 1 (т.е. +1 к длине списка)
         else:
             return 0
     
@@ -378,7 +378,7 @@ class App(Tk):
                     CNTR =self.arrange.position, COLUMN = self.mouse_position[0], LINE = self.mouse_position[1], ANGLE = self.arrange.rotation, curtvel = current_tvel_type,
                     X = self.arrange.get_coord(*self.mouse_position)[0], Y = self.arrange.get_coord(*self.mouse_position)[1]) + \
                         "    Количество твэлов всего: {NUM}".format(NUM = len(self.arrange.get_values()))
-            for i in range(1, self.arrange.get_tvel_types()):
+            for i in range(1, self.arrange.get_tvel_types() + 1):
                 num = self.arrange.get_quantity(i)
                 if num != 0:
                     status += "   "+ self.tvel_types[i]+": "+str(num)
@@ -657,12 +657,11 @@ class App(Tk):
         messagebox.showinfo(title = PROGRAM_NAME, message = __doc__)       
 
     def open_file(self):
-        self.filename =  filedialog.askopenfilename(initialdir = self.last_dir, title = "Выберите файл",filetypes = (("tvel files","*.{}".format(F_EXT)),("all files","*.*")))
-        self.last_dir = Path(self.filename).parent  #https://python-scripts.com/pathlib
-        tmp = Arrange.open(self.filename) 
+        temp_filename =  filedialog.askopenfilename(initialdir = self.last_dir, title = "Выберите файл",filetypes = (("tvel files","*.{}".format(F_EXT)),("all files","*.*")))
+        tmp = Arrange.open(temp_filename) 
         if tmp:
             self.arrange = tmp
-            num_colors = len(self.colors) - 1
+            num_colors = len(self.colors) - 1   #актуальные цвета для твэлов в списке self.colors с 1-ой позиции
             if self.arrange.get_tvel_types() > num_colors:
                 self.tvel_types.extend(["{}{}".format(M_TVEL,i) for i in range(num_colors, self.arrange.get_tvel_types()+1)])
                 self.colors.extend([rand_color() for _ in range(num_colors, self.arrange.get_tvel_types()+1)])
@@ -674,6 +673,9 @@ class App(Tk):
             self.config(menu=self.mainmenu)
             self.get_scale()
             self.draw_arrange()
+            self.filename = temp_filename
+            self.last_dir = Path(self.filename).parent  #https://python-scripts.com/pathlib
+
    
     def save_coord(self):
         if (self.arrange):
