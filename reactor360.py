@@ -153,7 +153,7 @@ class Arrange():
                 else:
                     messagebox.showerror(
                         "Ошибка чтения файла!",
-                        "Несогласованне данные!")
+                        "Несогласованные данные!")
                     return None
             return tmp
         except:
@@ -414,18 +414,16 @@ class App(Tk):
         App.menuitem[M_PUT].add_command(label=self.menu_[M_PUT][add_pos], command=self.add_menu_tvel)
 
     def add_menu_tvel(self):
-        add_pos = len(self.menu_[M_PUT])-1
-        for tag in range(add_pos+1):
-            App.menuitem[M_PUT].delete(self.menu_[M_PUT][tag]) #удаляем старые пункты
-        self.menu_[M_PUT].insert(add_pos, "{}{}".format(M_TVEL, add_pos))
-        self.tvel_var.set(add_pos)
         (rgb, hx) = colorchooser.askcolor(title = "Выберите цвет для нового типа твел")
         if (rgb!= None):
             self.colors.append(RGB(*rgb))
-        else:
-            self.colors.append(rand_color())
+            add_pos = len(self.menu_[M_PUT])-1
+            for tag in range(add_pos+1):
+                App.menuitem[M_PUT].delete(self.menu_[M_PUT][tag]) #удаляем старые пункты
+            self.menu_[M_PUT].insert(add_pos, "{}{}".format(M_TVEL, add_pos))
+            self.tvel_var.set(add_pos)
             self.tvel_types.append("{}{}".format(M_TVEL,add_pos)) #"{}{}".format(M_TVEL,i) for i in range(0,len(self.colors))
-        self.create_menu_tvel()
+            self.create_menu_tvel()
     
     def mark_tvel(self):
         self.mark.set(not self.mark.get())
