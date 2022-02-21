@@ -18,6 +18,7 @@ import math
 import json
 from pathlib import *
 import shutil
+import copy
 
 #Системные параметры
 ICON_NAME = "reactor360.ico"
@@ -46,6 +47,7 @@ M_SERVIS = "Сервис"
 M_ROTATE = "Повернуть"
 M_MOVE_CENTER = "Сместить центр"
 M_REBUILD = "Перестроить с другим шагом"
+M_REFLECT = "Зеркально относительно Y"
 M_RESET = "Вернуть в исходное"
 M_BEAM = "Луч"
 M_CIRCLE = "Окружность"
@@ -59,7 +61,7 @@ M_VERSION = "Версия"
 BASE_COLORS = ['white', 'red', 'green', 'yellow']
 BASE_MENU = {M_ARRANGE: [M_CREATE, M_OPEN, M_SAVE, M_SAVE_AS, M_SAVE_COORD, M_QUIT],
                 M_PUT: [M_CLEAR, M_TVEL_ADD_TYPE],
-                M_SERVIS : [M_ROTATE, M_MOVE_CENTER, M_RESET, M_REBUILD, M_BEAM ,M_CIRCLE, M_SCALE, M_MARK], #, M_MARK 
+                M_SERVIS : [M_ROTATE, M_MOVE_CENTER, M_REFLECT, M_REBUILD, M_RESET, M_BEAM ,M_CIRCLE, M_SCALE,  M_MARK],  
                 M_OPTIONS: [M_COLORS],
                 M_HELP: [M_ABOUT, M_VERSION],
                 }
@@ -82,14 +84,14 @@ def rand_color(): return RGB(randint(0,255), randint(0,255), randint(0,255))
 def radius(x,y): return (x*x+y*y)**0.5
 
 class Arrange():
-    def __init__(self, r_tvel, step, r_in, r_out):
+    def __init__(self, r_tvel=0, step=0, r_in=0, r_out=0):
         self.tvel = {} # структура словарь: Ключ - тип ТВЭЛ, значения - позиции ТВЭЛ
         self.tvel_marked =set()
         self.flag_changed = False
-        self.r_tvel = r_tvel if r_tvel>0 else 0
-        self.r_in = r_in if r_in>0 else 0
-        self.r_out = r_out if r_out > self.r_in else self.r_in
-        self.step = step if step>2*self.r_tvel else 2*self.r_tvel
+        self.r_tvel = r_tvel
+        self.r_in = r_in
+        self.r_out = r_out
+        self.step = step
         self.position = [0, 0]
         self.rotation = 0
     
@@ -207,8 +209,8 @@ class Arrange():
                     if (r + tmp.r_tvel <= tmp.r_out):
                         if (r - tmp.r_tvel >= tmp.r_in) or (r_in==0.0):
                             tmp.add(i,j ,1)
-                
-            return tmp
+            if tmp.tvel!={}:    
+                return tmp
         else:
             messagebox.showerror("Ошибка ввода данных!", "Несогласованне данные!")
             return None
@@ -249,11 +251,12 @@ class ServiceDialog():
         
         self.entrys[0].focus_set() 
         self.entrys[len(self.entrys)-1].bind("<Return>", lambda obj=self: func(self))
-        self.entrys[0].bind("<Escape>", self.destroy)
-      
+              
         button_ok = Button( self.dlg, text = "Ок", command = lambda obj=self: func(self)) 
+        button_ok.bind("<Return>", lambda obj=self: func(self))
         button_ok.pack(side='left', pady = 20, padx=30)
         button_cancel = Button(self.dlg, text="Отмена", command = self.destroy) 
+        button_cancel.bind("<Return>", self.destroy)
         button_cancel.pack(side='right',pady = 20, padx=30)
         self.dlg.bind("<Escape>", self.destroy)
     
@@ -319,8 +322,8 @@ class App(Tk):
             pass
         screen_height=int(self.wm_maxsize()[1])  # получаем размер экрана и вычисляем размер окна приложения
         self.start_position_askdialog="+{}+{}".format(int(screen_height/3), int(screen_height/3))
-        self.geometry('{}x{}+{}+{}'.format(int(screen_height*0.9), int(screen_height*0.9), 0, 0))
-        #self.state("zoomed") #- окно на весь экран над панелью задач
+        #self.geometry('{}x{}+{}+{}'.format(int(screen_height*0.9), int(screen_height*0.9), 0, 0))
+        self.state("zoomed") #- окно на весь экран над панелью задач
         self.minsize(400, 400)
         self.arrange = None 
         self.scale = 0
@@ -532,6 +535,10 @@ class App(Tk):
                 self.filename=''
                 self.get_scale()
                 self.draw_arrange()
+            else:
+                messagebox.showerror(
+                    "Ошибка ввода данных!",
+                    "При данных параметрах расстановка не содержит твелов!")
         dlg = ServiceDialog(self, *parameters, title = M_CREATE, geometry = '280x300' + self.start_position_askdialog, func = ok)
 
     def rebuild_new_step(self):
@@ -603,6 +610,15 @@ class App(Tk):
             self.draw_arrange()
         if self.arrange:
             dlg = ServiceDialog(self, "Смещение по X", "Смещение по Y", title = M_MOVE_CENTER, geometry = '250x200' + self.start_position_askdialog, func = ok)
+
+    def reflect(self):
+        if self.arrange:
+            tmp = copy.deepcopy(self.arrange)
+            for item in self.arrange.get_values():
+                tmp.add(-item[0], item[1], self.arrange.get_tvel(*item))
+            self.arrange = tmp    
+
+            self.draw_arrange()
 
     def reset(self):
         if self.arrange:
@@ -733,6 +749,8 @@ class App(Tk):
             self.change_scale()
         if tag == M_ROTATE:
             self.rotate()
+        if tag == M_REFLECT:
+            self.reflect()
         if tag == M_RESET:
             self.reset()
         if tag == M_BEAM:
