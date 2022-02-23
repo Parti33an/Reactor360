@@ -85,7 +85,7 @@ def radius(x,y): return (x*x+y*y)**0.5
 
 class Arrange():
     def __init__(self, r_tvel=0, step=0, r_in=0, r_out=0):
-        self.tvel = {} # структура словарь: Ключ - тип ТВЭЛ, значения - позиции ТВЭЛ
+        self.tvel = {} # структура словарь: Ключ - тип ТВЭЛ, значения - список позиции ТВЭЛ
         self.tvel_marked =set()
         self.flag_changed = False
         self.r_tvel = r_tvel
@@ -133,8 +133,9 @@ class Arrange():
             return 0
     
     def get_values(self):
-        return list(set().union(*list(self.tvel.values())))
-    
+        #return list(set().union(*list(self.tvel.values()))) # в старой версии для множеств
+        return sum(list(self.tvel.values()), [])
+
     @classmethod
     def open(cls, filename):
         if filename=='':
