@@ -103,14 +103,14 @@ class Arrange():
     def add(self, i, j, type):
         self.pop(i, j)
         if type not in self.tvel:
-            self.tvel[type]=set()
-        self.tvel[type].add((i, j))
+            self.tvel[type]=[]
+        self.tvel[type].append((i, j))
     
     def pop(self, i, j):
         key = self.get_tvel(i, j)
         if key:
-            self.tvel[key].discard((i, j))
-        if self.tvel.get(key) == set():
+            self.tvel[key].remove((i, j))
+        if self.tvel.get(key) == []:
             self.tvel.pop(key) 
         
     def get_quantity(self, i):
