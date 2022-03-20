@@ -11,7 +11,7 @@
 VERSION_INFO = "Версия 3.0 релиз Python\n (C)&(P) Ванюков Е.Е.\n\t2005 - 2022"
 
 from random import randint
-from tkinter import filedialog, messagebox, colorchooser
+from tkinter import filedialog, messagebox, colorchooser, PhotoImage
 from tkinter.ttk import Combobox
 from tkinter import *
 import math
@@ -20,9 +20,10 @@ from pathlib import *
 import shutil
 import copy
 
+
 #Системные параметры
-ICON_NAME = "reactor360.ico"
-INI_FILE = "reactor360.ini"
+ICON_NAME = 'reactor360.ico'
+INI_FILE = 'reactor360.ini'
 COS_60 = 0.5
 SIN_60 = (3**0.5)/2
 OUTPUT_FORMAT = "{:.4f},{:.4f}\n"  # формат сохранения координат
@@ -239,6 +240,8 @@ class ServiceDialog():
         self.dlg.title(title)
         self.dlg.geometry(geometry)
         self.dlg.resizable(width = False, height= False)
+        if (Path(ICON_NAME).exists()):
+            self.dlg.iconbitmap(ICON_NAME)
         self.dlg.grab_set()
         #self.window = Label(self.dlg)
         labels = []
@@ -255,10 +258,10 @@ class ServiceDialog():
               
         button_ok = Button( self.dlg, text = "Ок", command = lambda obj=self: func(self)) 
         button_ok.bind("<Return>", lambda obj=self: func(self))
-        button_ok.pack(side='left', pady = 20, padx=30)
+        button_ok.pack(side='left', pady = 10, padx=20)
         button_cancel = Button(self.dlg, text="Отмена", command = self.destroy) 
         button_cancel.bind("<Return>", self.destroy)
-        button_cancel.pack(side='right',pady = 20, padx=30)
+        button_cancel.pack(side='right',pady = 10, padx=20)
         self.dlg.bind("<Escape>", self.destroy)
     
     def get_value(self):
@@ -318,13 +321,17 @@ class App(Tk):
         self.configure(bg='blue')
         self.title( PROGRAM_NAME + " - " + DEFAULT_NAME)
         if (Path(ICON_NAME).exists()):
-            self.iconbitmap(default = ICON_NAME)
+            #print(ICON_NAME)
+            #self.tk.call('wm', 'iconphoto', self._w, PhotoImage(file=ICON_NAME))
+            #self.iconphoto(False, PhotoImage(file = "reactor360.png"))
+            self.iconbitmap(ICON_NAME)
         else:
+            print("No icon")
             pass
         screen_height=int(self.wm_maxsize()[1])  # получаем размер экрана и вычисляем размер окна приложения
         self.start_position_askdialog="+{}+{}".format(int(screen_height/3), int(screen_height/3))
-        #self.geometry('{}x{}+{}+{}'.format(int(screen_height*0.9), int(screen_height*0.9), 0, 0))
-        self.state("zoomed") #- окно на весь экран над панелью задач
+        self.geometry('{}x{}+{}+{}'.format(int(screen_height*0.9), int(screen_height*0.9), 0, 0))
+        #self.state("zoomed") #- окно на весь экран над панелью задач
         self.minsize(400, 400)
         self.arrange = None 
         self.scale = 0
@@ -338,7 +345,7 @@ class App(Tk):
         self.menu_[M_PUT] = [M_CLEAR, *[self.tvel_types[i] for i in range(1,len(self.tvel_types))], M_TVEL_ADD_TYPE]
         
         self.screen = ResizingCanvas(self, bg='white')
-        self.statusbar = Label(self, text="  No data", bd=3, relief=SUNKEN, anchor=W)
+        self.statusbar = Label(self, text="  No data", bd=3, relief=SUNKEN, anchor=W, font="Arial 10")
         self.statusbar.pack(side=BOTTOM, fill=X)
         self.screen.pack(fill="both", expand=True)
         self.screen.bind("<Button-1>", self.mouse_pressed)
@@ -376,16 +383,16 @@ class App(Tk):
         if (self.arrange):
             current_tvel_type = self.arrange.get_tvel(*self.mouse_position)
             current_tvel_type = "пусто" if current_tvel_type == None else M_TVEL + str(current_tvel_type)
-            status = " Радиус твэл: {RTVEL}    Шаг: {STEP}    Радиус внутренний: {RIN}    Радиус внeшний: {ROUT}".format(
+            status = "Радиус твэл: {RTVEL}  Шаг: {STEP}  Rin: {RIN}  Rout: {ROUT}".format(
                 RTVEL = self.arrange.r_tvel, STEP = self.arrange.step, RIN = self.arrange.r_in, ROUT = self.arrange.r_out) + \
-                "    Центр: {CNTR}    Поворот: {ANGLE}    Указатель на {curtvel}    X= {X:.4f}  Y= {Y:.4f}    столбец= {COLUMN}  ряд= {LINE}".format(
+                "  Центр: {CNTR}  Поворот: {ANGLE}  Указатель на {curtvel}  X= {X:.4f}  Y= {Y:.4f}  столбец= {COLUMN}  ряд= {LINE}".format(
                     CNTR =self.arrange.position, COLUMN = self.mouse_position[0], LINE = self.mouse_position[1], ANGLE = self.arrange.rotation, curtvel = current_tvel_type,
                     X = self.arrange.get_coord(*self.mouse_position)[0], Y = self.arrange.get_coord(*self.mouse_position)[1]) + \
-                        "    Количество твэлов всего: {NUM}".format(NUM = len(self.arrange.get_values()))
+                        "   Количество элементов: {NUM}".format(NUM = len(self.arrange.get_values()))
             for i in range(1, self.arrange.get_tvel_types() + 1):
                 num = self.arrange.get_quantity(i)
                 if num != 0:
-                    status += "   "+ self.tvel_types[i]+": "+str(num)
+                    status += "  "+ self.tvel_types[i]+": "+str(num)
             if self.mark.get():
                 status = "РЕЖИМ ПОМЕТКИ\t" + status
             else:
@@ -653,15 +660,17 @@ class App(Tk):
         dialog.geometry('280x100'+self.start_position_askdialog)
         dialog.title("Выбрать цвета")
         dialog.focus_set()
+        if (Path(ICON_NAME).exists()):
+            dialog.iconbitmap(ICON_NAME)
         dialog.grab_set()
         dialog.protocol("WM_DELETE_WINDOW", close)
         dialog.resizable(width = False, height= False)
         color_tvel=Button(dialog, width = 1, height= 1, bg= self.colors[1], command = change_color)
-        color_tvel.place(relx=0.8, rely=0.23)
+        color_tvel.place(relx=0.8, rely=0.18)
         Button(dialog, text = "Ок", width= 10, command = close).place(relx=0.35, rely=0.65)
         combo_choice = Combobox(dialog, values=self.menu_[M_PUT][1:-1], state = 'readonly')
         combo_choice.current(0)
-        combo_choice.place(relx=0.23, rely=0.23)
+        combo_choice.place(relx=0.1, rely=0.23)
         combo_choice.bind("<<ComboboxSelected>>", get_choice)
         dialog.bind("<Escape>", close)        
        
@@ -678,8 +687,8 @@ class App(Tk):
             self.arrange = tmp
             num_colors = len(self.colors) - 1   #актуальные цвета для твэлов в списке self.colors с 1-ой позиции
             if self.arrange.get_tvel_types() > num_colors:
-                self.tvel_types.extend(["{}{}".format(M_TVEL,i) for i in range(num_colors, self.arrange.get_tvel_types()+1)])
-                self.colors.extend([rand_color() for _ in range(num_colors, self.arrange.get_tvel_types()+1)])
+                self.tvel_types.extend(["{}{}".format(M_TVEL,i) for i in range(num_colors+1, self.arrange.get_tvel_types()+1)])
+                self.colors.extend([rand_color() for _ in range(num_colors+1, self.arrange.get_tvel_types()+1)])
                 # перерисовываем меню 
                 for tag in range(len(self.menu_[M_PUT])):
                     App.menuitem[M_PUT].delete(self.menu_[M_PUT][tag]) #удаляем старые пункты
