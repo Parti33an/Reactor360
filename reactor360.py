@@ -88,7 +88,7 @@ class Arrange():
     def __init__(self, r_tvel=0, step=0, r_in=0, r_out=0):
         self.tvel = {} # структура словарь: Ключ - тип ТВЭЛ, значения - список позиции ТВЭЛ
         self.tvel_marked =set()
-        self.flag_changed = False
+        #self.flag_changed = False
         self.r_tvel = r_tvel
         self.r_in = r_in
         self.r_out = r_out
@@ -535,89 +535,109 @@ class App(Tk):
 
     def create(self):
         def ok(object):
-            data = object.get_value()
-            tmp = Arrange.new(*data)
-            if tmp:
-                object.destroy()
-                self.arrange=tmp
-                self.filename=''
-                self.get_scale()
-                self.draw_arrange()
-            else:
-                messagebox.showerror(
-                    "Ошибка ввода данных!",
-                    "При данных параметрах расстановка не содержит твелов!")
+            try:
+                data = object.get_value()
+                tmp = Arrange.new(*data)
+                if tmp:
+                    object.destroy()
+                    self.arrange=tmp
+                    self.filename=''
+                    self.get_scale()
+                    self.draw_arrange()
+                else:
+                    messagebox.showerror(
+                        "Ошибка ввода данных!",
+                        "При данных параметрах расстановка не содержит твелов!")
+            except:
+                pass
         dlg = ServiceDialog(self, *parameters, title = M_CREATE, geometry = '280x300' + self.start_position_askdialog, func = ok)
 
     def rebuild_new_step(self):
         def ok(object):
-            tmp = object.get_value()[0]
-            if (tmp<2*self.arrange.r_tvel):
-                messagebox.showerror(
-                    "Ошибка ввода данных!",
-                    "Недопустимо, пересечение твелов!")
-            else:
-                self.arrange.step = tmp
-                object.destroy()
-                self.get_scale()
-                self.draw_arrange()
+            try:
+                tmp = object.get_value()[0]
+                if (tmp<2*self.arrange.r_tvel):
+                    messagebox.showerror(
+                        "Ошибка ввода данных!",
+                        "Недопустимо, пересечение твелов!")
+                else:
+                    self.arrange.step = tmp
+                    object.destroy()
+                    self.get_scale()
+                    self.draw_arrange()
+            except:
+                pass
         if self.arrange:
             dlg = ServiceDialog(self, "Введите новый шаг", title = M_REBUILD, geometry = '250x120' + self.start_position_askdialog, func = ok)
     
     def draw_beam(self):
         def ok(object):
-            angle = object.get_value()[0]
-            x0, y0 = self.screen.get_center()
-            scale = self.scale
-            self.screen.create_line(x0, y0, x0 * (1 + math.cos(angle/180*math.pi)), y0 *(1 - math.sin(angle/180*math.pi)) , dash = int(scale))
-            object.destroy()
+            try:
+                angle = object.get_value()[0]
+                x0, y0 = self.screen.get_center()
+                scale = self.scale
+                self.screen.create_line(x0, y0, x0 * (1 + math.cos(angle/180*math.pi)), y0 *(1 - math.sin(angle/180*math.pi)) , dash = int(scale))
+                object.destroy()
+            except:
+                pass
         if self.arrange:
             dlg = ServiceDialog(self, "Введите угол наклона луча", title = M_BEAM, geometry = '250x120' + self.start_position_askdialog, func = ok)
    
     def draw_circle(self):
         def ok(object):
-            tmp = object.get_value()[0]
-            if (tmp>0.0):
-                object.destroy()
-                self.circle(0, 0, tmp, width=2, outline='black', dash = int(self.scale))
-            else:
-                messagebox.showerror(
-                    "Ошибка ввода данных!",
-                    "Требуется положительное значение!")
+            try:
+                radius = object.get_value()[0]
+                if (radius>0.0):
+                    object.destroy()
+                    self.circle(0, 0, radius, width=2, outline='black', dash = int(self.scale))
+                else:
+                    messagebox.showerror(
+                        "Ошибка ввода данных!",
+                        "Требуется положительное значение!")
+            except:
+                pass
         if self.arrange:
             dlg = ServiceDialog(self, "Введите радиус окружности", title = M_CIRCLE, geometry = '250x120' + self.start_position_askdialog, func = ok)
     
     def rotate(self):
         def ok(object):
-            self.arrange.rotation += object.get_value()[0]
-            object.destroy()
-            self.draw_arrange()
+            try:
+                self.arrange.rotation +=object.get_value()[0]
+                object.destroy()
+                self.draw_arrange()
+            except:
+                pass
         if self.arrange:
             dlg = ServiceDialog(self, "Введите угол поворота", title = M_ROTATE, geometry = '250x120' + self.start_position_askdialog, func = ok)
 
     def change_scale(self):
         def ok(object):
-            tmp = object.get_value()[0]
-            if (tmp>0.0):
-                self.scale *= tmp
-                object.destroy()
-                self.draw_arrange()
-            else:
-                messagebox.showerror(
-                    "Ошибка ввода данных!",
-                    "Требуется положительное значение!")
+            try:
+                new_scale = object.get_value()[0]
+                if (new_scale>0.0):
+                    self.scale *= new_scale
+                    object.destroy()
+                    self.draw_arrange()
+                else:
+                    messagebox.showerror(
+                        "Ошибка ввода данных!",
+                        "Требуется положительное значение!")
+            except:
+                pass
         if self.arrange:
             dlg = ServiceDialog(self, "Введите изменение масштаба", title = M_SCALE, geometry = '250x120' + self.start_position_askdialog, func = ok)
 
     def move_center(self):
         def ok(object):
-            new_position = object.get_value()
-            if new_position:
+            try:
+                new_position = object.get_value()
                 self.arrange.position[0] += new_position[0]
                 self.arrange.position[1] += new_position[1]
                 object.destroy()
-            self.get_scale()
-            self.draw_arrange()
+                self.get_scale()
+                self.draw_arrange()
+            except:
+                pass
         if self.arrange:
             dlg = ServiceDialog(self, "Смещение по X", "Смещение по Y", title = M_MOVE_CENTER, geometry = '250x200' + self.start_position_askdialog, func = ok)
 
@@ -626,8 +646,8 @@ class App(Tk):
             tmp = copy.deepcopy(self.arrange)
             for item in self.arrange.get_values():
                 tmp.add(-item[0], item[1], self.arrange.get_tvel(*item))
-                #if (item[0] != 0):
-                #    tmp.pop(*item)
+                if (item[0] != 0):
+                    tmp.pop(*item)
             tmp.position[0] = -self.arrange.position[0]
             self.arrange = tmp    
             self.draw_arrange()
