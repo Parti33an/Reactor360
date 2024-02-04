@@ -96,6 +96,12 @@ class Arrange():
         self.position = [0, 0]
         self.rotation = 0
     
+    def copy_attributes(self):
+        tmp = Arrange(self.r_tvel,self.step,self.r_in,self.r_out)
+        tmp.position = self.position
+        tmp.rotation = self.rotation
+        return tmp
+
     def get_tvel(self, i, j):
         for key in self.tvel:
             if (i, j) in self.tvel[key]:
@@ -211,7 +217,7 @@ class Arrange():
                     if (r + tmp.r_tvel <= tmp.r_out):
                         if (r - tmp.r_tvel >= tmp.r_in) or (r_in==0.0):
                             tmp.add(i,j ,1)
-            if tmp.tvel!={}:    
+            if tmp.tvel != {}:    
                 return tmp
         else:
             messagebox.showerror("Ошибка ввода данных!", "Несогласованне данные!")
@@ -643,11 +649,10 @@ class App(Tk):
 
     def reflect(self):
         if self.arrange:
-            tmp = copy.deepcopy(self.arrange)
+            tmp = self.arrange.copy_attributes()
             for item in self.arrange.get_values():
                 tmp.add(-item[0], item[1], self.arrange.get_tvel(*item))
-                if (item[0] != 0):
-                    tmp.pop(*item)
+    
             tmp.position[0] = -self.arrange.position[0]
             self.arrange = tmp    
             self.draw_arrange()
