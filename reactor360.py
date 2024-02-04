@@ -331,7 +331,7 @@ class App(Tk):
         screen_height=int(self.wm_maxsize()[1])  # получаем размер экрана и вычисляем размер окна приложения
         self.start_position_askdialog="+{}+{}".format(int(screen_height/3), int(screen_height/3))
         self.geometry('{}x{}+{}+{}'.format(int(screen_height*0.9), int(screen_height*0.9), 0, 0))
-        #self.state("zoomed") #- окно на весь экран над панелью задач
+        self.state("zoomed") #- окно на весь экран над панелью задач
         self.minsize(400, 400)
         self.arrange = None 
         self.scale = 0
@@ -611,9 +611,11 @@ class App(Tk):
 
     def move_center(self):
         def ok(object):
-            self.arrange.position[0] += object.get_value()[0]
-            self.arrange.position[1] += object.get_value()[1]
-            object.destroy()
+            new_position = object.get_value()
+            if new_position:
+                self.arrange.position[0] += new_position[0]
+                self.arrange.position[1] += new_position[1]
+                object.destroy()
             self.get_scale()
             self.draw_arrange()
         if self.arrange:
@@ -624,8 +626,10 @@ class App(Tk):
             tmp = copy.deepcopy(self.arrange)
             for item in self.arrange.get_values():
                 tmp.add(-item[0], item[1], self.arrange.get_tvel(*item))
+                #if (item[0] != 0):
+                #    tmp.pop(*item)
+            tmp.position[0] = -self.arrange.position[0]
             self.arrange = tmp    
-
             self.draw_arrange()
 
     def reset(self):
