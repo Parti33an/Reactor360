@@ -30,7 +30,6 @@ OUTPUT_FORMAT = "{:.4f},{:.4f}\n"  # формат сохранения коор�
 F_EXT = "tve"
 DEFAULT_NAME = '' #'noname.' + F_EXT
 PROGRAM_NAME = ' А.З. '
-ACTIVE_COLOR = 'magenta'
 
 # Меню
 M_ARRANGE = 'Расстановка'
@@ -59,7 +58,7 @@ M_COLORS = "Цвета твэл"
 M_HELP = "Помощь"
 M_ABOUT = 'О программе'
 M_VERSION = "Версия"
-BASE_COLORS = ['white', 'red', 'green', 'yellow']
+BASE_COLORS = ['magenta', 'red', 'green', 'yellow']
 BASE_MENU = {M_ARRANGE: [M_CREATE, M_OPEN, M_SAVE, M_SAVE_AS, M_SAVE_COORD, M_QUIT],
                 M_PUT: [M_CLEAR, M_TVEL_ADD_TYPE],
                 M_SERVIS : [M_ROTATE, M_MOVE_CENTER, M_REFLECT, M_REBUILD, M_RESET, M_BEAM ,M_CIRCLE, M_SCALE,  M_MARK],  
@@ -459,6 +458,7 @@ class App(Tk):
         self.mouse_xy = (event.x, event.y)
 
     def mouse_pressed(self, event):
+        CURSOR_COLOR = self.colors[0] # цвет элемента под курсором
         tvel_type = self.tvel_var.get()
         if(self.arrange):
             x0, y0 = self.screen.get_center()
@@ -468,7 +468,7 @@ class App(Tk):
             if (not self.mark.get()):
                 if tvel_type != 0:
                     self.arrange.add(i, j, tvel_type)
-                    self.circle(x, y, self.arrange.r_tvel, width=1, outline='black', activefill = ACTIVE_COLOR, fill = self.colors[tvel_type])
+                    self.circle(x, y, self.arrange.r_tvel, width=1, outline='black', activefill = CURSOR_COLOR, fill = self.colors[tvel_type])
                     if (i, j) in self.arrange.tvel_marked:
                         self.draw_mark(x, y)
                 else:
@@ -482,7 +482,7 @@ class App(Tk):
                         self.draw_mark(x, y)
                     else:
                         self.arrange.tvel_marked.remove((i, j))
-                        self.circle(x, y, self.arrange.r_tvel, width=1, outline='black', activefill = ACTIVE_COLOR, fill = self.colors[self.arrange.get_tvel(i, j)]) #activefill = ACTIVE_COLOR,
+                        self.circle(x, y, self.arrange.r_tvel, width=1, outline='black', activefill = CURSOR_COLOR, fill = self.colors[self.arrange.get_tvel(i, j)]) #activefill = CURSOR_COLOR,
         self.update()
     
     def draw_mark(self, x, y):
@@ -517,6 +517,7 @@ class App(Tk):
                                 width= width, outline= outline, fill=fill, dash = dash, activefill = activefill)
 
     def draw_arrange(self):
+        CURSOR_COLOR = self.colors[0]
         if (self.arrange != None):
             scale = self.scale
             self.screen.delete("all")            #очистить экран
@@ -528,8 +529,7 @@ class App(Tk):
             
             for item in self.arrange.get_values():
                 x, y = self.arrange.get_coord(*item)
-                a = self.colors[self.arrange.get_tvel(*item)]
-                self.circle(x, y, self.arrange.r_tvel, width=1, outline='black', activefill = ACTIVE_COLOR, fill = self.colors[self.arrange.get_tvel(*item)])
+                self.circle(x, y, self.arrange.r_tvel, width=1, outline='black', activefill = CURSOR_COLOR, fill = self.colors[self.arrange.get_tvel(*item)])
             for item in self.arrange.tvel_marked:
                 self.draw_mark(*self.arrange.get_coord(*item))
  
@@ -668,12 +668,18 @@ class App(Tk):
     def choose_colors(self):
         def get_choice(event):
             tvel_type = combo_choice.get()
-            num = int(tvel_type[len(M_TVEL):])
+            try:
+                num = int(tvel_type[len(M_TVEL):])
+            except:
+                num = 0
             color_tvel.config(bg=self.colors[num])
             
         def change_color():
             tvel_type = combo_choice.get()
-            num = int(tvel_type[len(M_TVEL):])
+            try:
+                num = int(tvel_type[len(M_TVEL):])
+            except:
+                num = 0
             (rgb, hx) = colorchooser.askcolor(title = "Выберите цвет")
             # print(rgb) 
             if (rgb!= None):
@@ -694,13 +700,15 @@ class App(Tk):
         dialog.grab_set()
         dialog.protocol("WM_DELETE_WINDOW", close)
         dialog.resizable(width = False, height= False)
-        color_tvel=Button(dialog, width = 1, height= 1, bg= self.colors[1], command = change_color)
-        color_tvel.place(relx=0.8, rely=0.18)
         Button(dialog, text = "Ок", width= 10, command = close).place(relx=0.35, rely=0.65)
-        combo_choice = Combobox(dialog, values=self.menu_[M_PUT][1:-1], state = 'readonly')
-        combo_choice.current(0)
+        items_choice = ['курсор'] + self.menu_[M_PUT][1:-1]
+        default_choice = 0
+        combo_choice = Combobox(dialog, values = items_choice, state = 'readonly')
+        combo_choice.current(default_choice)
         combo_choice.place(relx=0.1, rely=0.23)
         combo_choice.bind("<<ComboboxSelected>>", get_choice)
+        color_tvel=Button(dialog, width = 1, height= 1, bg= self.colors[default_choice], command = change_color)
+        color_tvel.place(relx=0.8, rely=0.18)
         dialog.bind("<Escape>", close)        
        
     def show_version(self):
